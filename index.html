@@ -715,6 +715,37 @@
     color: #666;
     margin-top: 6px;
 }
+  .folder-header {
+    font-size: 13px;
+    font-weight: 600;
+    color: #666;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin: 18px 4px 8px;
+}
+.folder-header:first-child { margin-top: 0; }
+.fmt-summary {
+    margin-top: 10px;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    font-size: 13px;
+    color: #444;
+}
+.fmt-sum-row {
+    display: flex;
+    justify-content: space-between;
+    padding: 4px 8px;
+    background: #f7f5f1;
+    border-radius: 6px;
+}
+.fmt-sum-row.muted { opacity: 0.6; }
+.fmt-sum-row.total {
+    background: #222;
+    color: #fff;
+    font-weight: 600;
+    margin-top: 4px;
+}
 </style>
 </head>
 <body>
@@ -849,6 +880,7 @@
     <span>📱 электронная</span>
     <span>🎧 аудио</span>
       </div>
+      <div id="formatSummary" class="fmt-summary"></div>
     </div>
   </div>
 </div>
@@ -883,6 +915,28 @@
     localStorage.setItem(FORMATS_KEY, JSON.stringify(dayFormats));
 }
 
+  function renderFormatSummary() {
+    const totals = { paper: 0, ebook: 0, audio: 0, none: 0 };
+    for (const key in dayData) {
+        const p = dayData[key] || 0;
+        const f = dayFormats[key];
+        if (f === 'paper') totals.paper += p;
+        else if (f === 'ebook') totals.ebook += p;
+        else if (f === 'audio') totals.audio += p;
+        else totals.none += p;
+    }
+    const el = document.getElementById('formatSummary');
+    if (!el) return;
+    const total = totals.paper + totals.ebook + totals.audio + totals.none;
+    if (!total) { el.innerHTML = ''; return; }
+    el.innerHTML = `
+        <div class="fmt-sum-row"><span>📕 бумага:</span><strong>${totals.paper} стр.</strong></div>
+        <div class="fmt-sum-row"><span>📱 электронная:</span><strong>${totals.ebook} стр.</strong></div>
+        <div class="fmt-sum-row"><span>🎧 аудио:</span><strong>${totals.audio} стр.</strong></div>
+        ${totals.none ? `<div class="fmt-sum-row muted"><span>без формата:</span><strong>${totals.none} стр.</strong></div>` : ''}
+        <div class="fmt-sum-row total"><span>Всего:</span><strong>${total} стр.</strong></div>
+    `;
+  }
 function setCellFormat(key, format, btn) {
     if (dayFormats[key] === format) {
         delete dayFormats[key];
@@ -1146,7 +1200,7 @@ const list = activeStat === 'planned'
       list.innerHTML = '<div class="empty">Пока нет книг. Добавьте первую ✎</div>';
       return;
     }
-    list.innerHTML = books.map(b => `
+    const cardHtml = b => `
       <div class="book-card" style="--book-color:${bookColor(b.id)}; --book-color-soft:${bookColorSoft(b.id)};">
         <div class="book-cover">
           ${b.cover ? `<img src="${b.cover}" alt="">` : `<span class="placeholder">📖</span>`}
@@ -1163,7 +1217,22 @@ const list = activeStat === 'planned'
         </div>
         <button class="btn-delete" onclick="deleteBook(${b.id})" title="Удалить">×</button>
       </div>
-    `).join('');
+    `;
+
+const isRead = b => !!b.endDate || parseInt(b.rating) > 0;
+const planned = books.filter(b => !isRead(b));
+const read = books.filter(isRead);
+
+let html = '';
+if (planned.length) {
+    html += `<div class="folder-header">🔖 В планах · ${planned.length}</div>`;
+    html += planned.map(cardHtml).join('');
+}
+if (read.length) {
+    html += `<div class="folder-header">✅ Прочитано · ${read.length}</div>`;
+    html += read.map(cardHtml).join('');
+}
+list.innerHTML = html;
   }
   
   /* ---- Трекер по дням ---- */
@@ -1259,6 +1328,7 @@ html += `<button class="tracker-cell ${cls} ${filled}"
     saveDays();
     editingCell = null;
     renderTracker();
+    renderFormatSummary();
     }
   
   /* ---- Главная отрисовка ---- */
@@ -1268,6 +1338,7 @@ html += `<button class="tracker-cell ${cls} ${filled}"
     renderTracker();
     renderStatPanel();
     renderPlanForm();
+    renderFormatSummary();
   }
   
   renderToday();
