@@ -968,8 +968,9 @@
   
   /* ---- Статистика ---- */
   function renderStats() {
-    const read = books.filter(b => b.endDate).length;
-    const planned = books.filter(b => !b.endDate).length;
+    const isRead = b => !!b.endDate || parseInt(b.rating) > 0;
+const read = books.filter(isRead).length;
+const planned = books.filter(b => !isRead(b)).length;
     document.getElementById('readCount').textContent = read;
     document.getElementById('plannedCount').textContent = planned;
     
@@ -1005,10 +1006,11 @@
     
     document.getElementById('panelTitle').textContent = 
       activeStat === 'planned' ? 'В планах' : 'Прочитано';
-    
-    const list = activeStat === 'planned'
-      ? books.filter(b => !b.endDate)
-      : books.filter(b => b.endDate);
+
+    const isRead = b => !!b.endDate || parseInt(b.rating) > 0;
+const list = activeStat === 'planned'
+    ? books.filter(b => !isRead(b))
+    : books.filter(isRead);
     
     const listEl = document.getElementById('panelList');
     if (list.length === 0) {
@@ -1096,9 +1098,9 @@
         <div class="book-info">
           <div class="book-title">${escapeHtml(b.title)}</div>
           <div class="book-meta">
-            ${b.startDate || b.endDate 
-              ? `<span>📖 <strong>${formatMonth(b.startDate)}</strong> → <strong>${formatMonth(b.endDate)}</strong></span>` 
-              : `<span>📌 в планах</span>`}
+            ${(b.endDate || parseInt(b.rating) > 0)
+    ? `<span>📖 <strong>${formatMonth(b.endDate || b.startDate)}</strong></span>`
+    : `<span>🔖 в планах</span>`}
             <span>📄 <strong>${b.pages}</strong> стр.</span>
             ${b.rating > 0 ? `<span class="rating">${stars(b.rating)}</span>` : ''}
           </div>
