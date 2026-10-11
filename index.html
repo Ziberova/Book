@@ -682,6 +682,41 @@
     .stat-card { padding: 18px 20px; min-height: 84px; }
     .stat-value { font-size: 30px; }
   }
+  .cell-fmt {
+    display: block;
+    font-size: 8px;
+    line-height: 1;
+    margin-top: 1px;
+    opacity: 0.85;
+}
+.fmt-picker {
+    display: flex;
+    gap: 2px;
+    margin-top: 2px;
+    justify-content: center;
+}
+.fmt-btn {
+    border: 1px solid #ccc;
+    background: #fff;
+    border-radius: 4px;
+    font-size: 10px;
+    padding: 1px 3px;
+    cursor: pointer;
+    line-height: 1;
+}
+.fmt-btn.active {
+    background: #222;
+    color: #fff;
+    border-color: #222;
+}
+.fmt-legend {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    font-size: 12px;
+    color: #666;
+    margin-top: 6px;
+}
 </style>
 </head>
 <body>
@@ -810,6 +845,12 @@
         <div class="legend-item"><span class="legend-swatch" style="background:#a88ab8"></span>51–60</div>
         <div class="legend-item"><span class="legend-swatch" style="background:#8fa67e"></span>61+</div>
       </div>
+      <div class="fmt-legend">
+    <span><b>Формат:</b></span>
+    <span>📕 бумага</span>
+    <span>📱 электронная</span>
+    <span>🎧 аудио</span>
+      </div>
     </div>
   </div>
 </div>
@@ -818,11 +859,13 @@
   const MONTHS_FULL = ['Январь','Февраль','Март','Апрель','Май','Июнь','Июль','Август','Сентябрь','Октябрь','Ноябрь','Декабрь'];
   const STORAGE_KEY = 'reading_diary_books';
   const DAYS_KEY = 'reading_diary_days';
+  const FORMATS_KEY = 'reading_diary_formats';
   
   const PALETTE = ['#d97a7a','#e0a87a','#d4c470','#8ab8c9','#7a8fc9','#a88ab8','#8fa67e'];
   
   let books = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]');
   let dayData = JSON.parse(localStorage.getItem(DAYS_KEY) || '{}');
+  let dayFormats = JSON.parse(localStorage.getItem(FORMATS_KEY)) || {};
   let currentCover = null;
   let activeStat = null;
   let planFormOpen = false;
@@ -838,6 +881,21 @@
   function saveDays() {
     localStorage.setItem(DAYS_KEY, JSON.stringify(dayData));
   }
+  function saveFormats() {
+    localStorage.setItem(FORMATS_KEY, JSON.stringify(dayFormats));
+}
+
+function setCellFormat(key, format, btn) {
+    if (dayFormats[key] === format) {
+        delete dayFormats[key];
+    } else {
+        dayFormats[key] = format;
+    }
+    saveFormats();
+    const picker = btn.parentElement;
+    picker.querySelectorAll('.fmt-btn').forEach(b => b.classList.remove('active'));
+    if (dayFormats[key]) btn.classList.add('active');
+}
   
   /* ---- Сегодня ---- */
   function renderToday() {
@@ -1135,16 +1193,33 @@ const list = activeStat === 'planned'
         const key = `${year}-${m}-${d}`;
         const pages = dayData[key] || 0;
         if (editingCell === key) {
-          html += `<input type="number" class="tracker-input" id="cellInput"
-                   value="${pages || ''}" min="0" placeholder="0"
-                   onblur="saveCell('${key}', this.value)"
-                   onkeydown="cellKey(event)">`;
+    const curFmt = dayFormats[key] || '';
+    html += `<div class="cell-edit">
+        <input type="number" class="tracker-input" 
+            value="${pages || ''}" min="0"
+            onblur="saveCell('${key}', this.value)"
+            onkeydown="cellKey(event)">
+        <div class="fmt-picker">
+            <button type="button" tabindex="-1" class="fmt-btn ${curFmt==='paper'?'active':''}" 
+                onmousedown="event.preventDefault(); setCellFormat('${key}','paper',this)" title="Бумага">📕</button>
+            <button type="button" tabindex="-1" class="fmt-btn ${curFmt==='ebook'?'active':''}" 
+                onmousedown="event.preventDefault(); setCellFormat('${key}','ebook',this)" title="Электронная">📱</button>
+            <button type="button" tabindex="-1" class="fmt-btn ${curFmt==='audio'?'active':''}" 
+                onmousedown="event.preventDefault(); setCellFormat('${key}','audio',this)" title="Аудио">🎧</button>
+        </div>
+    </div>`;
+        }
         } else {
           const cls = getColorClass(pages);
           const filled = pages > 0 ? 'filled' : '';
-          html += `<button class="tracker-cell ${cls} ${filled}"
-                   onclick="editCell('${key}')"
-                   title="${MONTHS_FULL[m]} ${d}${pages ? ' · ' + pages + ' стр.' : ''}">${pages || ''}</button>`;
+          const fmt = dayFormats[key] || '';
+const fmtIcon = fmt === 'paper' ? '📕' : fmt === 'ebook' ? '📱' : fmt === 'audio' ? '🎧' : '';
+html += `<button class="tracker-cell ${cls} ${filled}" 
+    onclick="editCell('${key}')"
+    title="${MONTHS_FULL[m]} ${d}">
+    <span class="cell-num">${pages || ''}</span>
+    ${fmtIcon ? `<span class="cell-fmt">${fmtIcon}</span>` : ''}
+</button>`;
         }
       }
     }
@@ -1177,12 +1252,17 @@ const list = activeStat === 'planned'
   function saveCell(key, value) {
     if (cancelCellEdit) { cancelCellEdit = false; return; }
     const n = parseInt(value);
-    if (!n || n <= 0) delete dayData[key];
-    else dayData[key] = n;
+    if (!n || n <= 0) {
+        delete dayData[key];
+        delete dayFormats[key];
+        saveFormats();
+    } else {
+        dayData[key] = n;
+    }
     saveDays();
     editingCell = null;
     renderTracker();
-  }
+    }
   
   /* ---- Главная отрисовка ---- */
   function render() {
