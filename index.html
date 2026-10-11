@@ -682,12 +682,10 @@
     .stat-card { padding: 18px 20px; min-height: 84px; }
     .stat-value { font-size: 30px; }
   }
-  .cell-fmt {
-    display: block;
-    font-size: 8px;
-    line-height: 1;
-    margin-top: 1px;
-    opacity: 0.85;
+.cell-fmt {
+    display: inline;
+    font-size: 9px;
+    margin-left: 1px;
 }
 .fmt-picker {
     display: flex;
@@ -1222,7 +1220,6 @@ html += `<button class="tracker-cell ${cls} ${filled}"
         }
       }
     }
-    alert('трекер: длина html = ' + html.length);
     document.getElementById('trackerGrid').innerHTML = html;
     
     if (editingCell) {
