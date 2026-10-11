@@ -746,6 +746,29 @@
     font-weight: 600;
     margin-top: 4px;
 }
+  .book-tabs {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 12px;
+}
+.book-tab {
+    flex: 1;
+    padding: 10px 12px;
+    border: 1px solid #e0dcd4;
+    background: #fff;
+    border-radius: 10px;
+    font-size: 13px;
+    font-weight: 600;
+    color: #666;
+    cursor: pointer;
+    font-family: inherit;
+    transition: all 0.15s;
+}
+.book-tab.active {
+    background: #222;
+    color: #fff;
+    border-color: #222;
+}
 </style>
 </head>
 <body>
@@ -901,6 +924,7 @@
   let planFormOpen = false;
   let editingCell = null;
   let cancelCellEdit = false;
+  let bookFilter = null; // null = показать оба, 'planned' / 'read' = только один
   
   /* ---- Сохранение ---- */
   function saveBooks() {
@@ -1194,6 +1218,10 @@ const list = activeStat === 'planned'
   }
   
   /* ---- Список книг ---- */
+  function setBookFilter(f) {
+    bookFilter = (bookFilter === f) ? null : f;
+    renderBooks();
+  }
   function renderBooks() {
     const list = document.getElementById('booksList');
     if (books.length === 0) {
@@ -1223,13 +1251,19 @@ const isRead = b => !!b.endDate || parseInt(b.rating) > 0;
 const planned = books.filter(b => !isRead(b));
 const read = books.filter(isRead);
 
-let html = '';
-if (planned.length) {
-    html += `<div class="folder-header">🔖 В планах · ${planned.length}</div>`;
+let html = `<div class="book-tabs">
+    <button class="book-tab ${bookFilter==='planned'?'active':''}" 
+        onclick="setBookFilter('planned')">🔖 В планах · ${planned.length}</button>
+    <button class="book-tab ${bookFilter==='read'?'active':''}" 
+        onclick="setBookFilter('read')">✅ Прочитано · ${read.length}</button>
+</div>`;
+
+if (bookFilter !== 'read' && planned.length) {
+    html += `<div class="folder-header">🔖 В планах</div>`;
     html += planned.map(cardHtml).join('');
 }
-if (read.length) {
-    html += `<div class="folder-header">✅ Прочитано · ${read.length}</div>`;
+if (bookFilter !== 'planned' && read.length) {
+    html += `<div class="folder-header">✅ Прочитано</div>`;
     html += read.map(cardHtml).join('');
 }
 list.innerHTML = html;
