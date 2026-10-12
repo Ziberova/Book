@@ -931,6 +931,15 @@
 </head>
 <body>
 <div class="container">
+  <div class="slide active" id="slide1">
+    <div class="loader-wrap">
+        <div class="loader-title">Книжная барахолка</div>
+        <div class="loader-sub">Загрузка вдохновения…</div>
+        <div class="bar-track"><div class="bar-fill" id="barFill"></div></div>
+        <div class="bar-pct" id="barPct">0%</div>
+        <button class="start-btn hidden" id="startBtn" onclick="showSlide('slide2')">Читать 📚</button>
+    </div>
+  </div>
   <div class="slide" id="slide2">
   <div class="today" id="today"></div>
   
@@ -1064,6 +1073,11 @@
     <div id="formatSummary" class="fmt-summary"></div>
     <div id="trackerLog" class="tracker-log"></div>
  </div>
+  </div>
+    <div class="slide" id="slide3">
+    <h1>Полки</h1>
+    <p class="shelves-hint">Здесь будут полки по жанрам</p>
+    </div>
 </div>
 <script>
   const MONTHS = ['Янв','Фев','Мар','Апр','Май','Июн','Июл','Авг','Сен','Окт','Ноя','Дек'];
