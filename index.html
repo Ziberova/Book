@@ -857,6 +857,62 @@
     box-shadow: 0 4px 12px rgba(255, 126, 95, 0.25);
 }
 .streak.hidden { display: none; }
+  /* Новая раскладка формы */
+.form-layout {
+    display: grid;
+    grid-template-columns: 110px 1fr;
+    gap: 20px;
+    align-items: start;
+}
+.cover-field {
+    grid-column: 1;
+    grid-row: 1;
+}
+.title-field {
+    grid-column: 2;
+    grid-row: 1;
+}
+.title-field label {
+    font-size: 11px;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    color: #aaa;
+    font-weight: 500;
+    display: block;
+    margin-bottom: 6px;
+}
+.title-field input {
+    width: 100%;
+    padding: 10px 12px;
+    border: 1px solid #e5e1d8;
+    border-radius: 8px;
+    font-size: 14px;
+    font-family: inherit;
+    background: #fdfcfa;
+    color: #2c2c2c;
+    outline: none;
+}
+.title-field input:focus { border-color: #b8a88a; }
+
+.form-fields {
+    grid-column: 1 / -1;
+    grid-row: 2;
+}
+
+/* Скрыть нативный инпут "Выберите файл" */
+#coverInput {
+    display: none;
+}
+
+/* На мобильном — в столбик */
+@media (max-width: 500px) {
+    .form-layout {
+        grid-template-columns: 1fr;
+    }
+    .cover-field { grid-column: 1; grid-row: 1; }
+    .title-field { grid-column: 1; grid-row: 2; }
+    .form-fields { grid-column: 1; grid-row: 3; }
+}
 </style>
 </head>
 <body>
