@@ -918,6 +918,15 @@
     .title-field { grid-column: 1; grid-row: 2; }
     .form-fields { grid-column: 1; grid-row: 3; }
 }
+  .book-genre {
+    display: inline-block;
+    padding: 2px 8px;
+    background: #f0ece4;
+    color: #7a7060;
+    border-radius: 4px;
+    font-size: 11px;
+    margin-bottom: 6px;
+  }
 </style>
 </head>
 <body>
@@ -1210,17 +1219,19 @@ function removeCover(e) { e.stopPropagation(); resetCoverField(); }
     if (!title) { document.getElementById('title').focus(); return; }
     
     books.unshift({
-      id: Date.now(),
-      title,
-      cover: currentCover || null,
-      startDate: document.getElementById('startDate').value,
-      endDate: document.getElementById('endDate').value,
-      pages: document.getElementById('pages').value || 0,
-      rating: document.getElementById('rating').value || 0
-    });
+    id: Date.now(),
+    title,
+    cover: currentCover || null,
+    genre: document.getElementById('genre').value,
+    startDate: document.getElementById('startDate').value,
+    endDate: document.getElementById('endDate').value,
+    pages: document.getElementById('pages').value,
+    rating: document.getElementById('rating').value
+});
     saveBooks();
     render();
     
+    document.getElementById('genre').value = 'Фэнтези';
     document.getElementById('title').value = '';
     document.getElementById('startDate').value = '';
     document.getElementById('endDate').value = '';
@@ -1381,7 +1392,10 @@ const list = activeStat === 'planned'
         </div>
         <div class="book-info">
           <div class="book-title">${escapeHtml(b.title)}</div>
-          <div class="book-meta">
+         <div class="book-info">
+         <div class="book-title">${escapeHtml(b.title)}</div>
+         ${b.genre ? `<div class="book-genre">${escapeHtml(b.genre)}</div>` : ''}
+         <div class="book-meta">
             ${(b.endDate || parseInt(b.rating) > 0)
     ? `<span>📖 <strong>${formatMonth(b.endDate || b.startDate)}</strong></span>`
     : `<span>🔖 в планах</span>`}
