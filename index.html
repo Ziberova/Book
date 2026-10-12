@@ -781,25 +781,6 @@
   <input type="file" id="imp" accept=".json" style="display:none" onchange="importData(event)">
   </div>
   
-  <!-- Статистика -->
-  <div class="stats">
-    <div class="stat-card" id="statPlanned" onclick="toggleStat('planned')">
-      <div class="stat-info">
-        <div class="stat-label">В планах</div>
-        <div class="stat-hint" id="hintPlanned">нажмите, чтобы посмотреть</div>
-      </div>
-      <div class="stat-value" id="plannedCount">0</div>
-      <button class="stat-plus" onclick="event.stopPropagation(); togglePlanForm()" title="Добавить в планы">+</button>
-    </div>
-    <div class="stat-card read" id="statRead" onclick="toggleStat('read')">
-      <div class="stat-info">
-        <div class="stat-label">Прочитано</div>
-        <div class="stat-hint" id="hintRead">нажмите, чтобы посмотреть</div>
-      </div>
-      <div class="stat-value" id="readCount">0</div>
-    </div>
-  </div>
-  
   <!-- Форма добавления в планы -->
   <div class="plan-form" id="planForm" style="display:none">
     <h3>Добавить в планы</h3>
@@ -1355,10 +1336,8 @@ html += `<button class="tracker-cell ${cls} ${filled}"
   
   /* ---- Главная отрисовка ---- */
   function render() {
-    renderStats();
     renderBooks();
     renderTracker();
-    renderStatPanel();
     renderPlanForm();
     renderFormatSummary();
   }
@@ -1376,7 +1355,6 @@ html += `<button class="tracker-cell ${cls} ${filled}"
   document.addEventListener('keydown', e => {
     if (e.key === 'Escape') {
       if (planFormOpen) closePlanForm();
-      else if (activeStat) closeStatPanel();
     }
   });
   function exportData() {
