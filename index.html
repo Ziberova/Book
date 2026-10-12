@@ -844,6 +844,19 @@
     text-align: center;
     padding: 12px 6px;
 }
+  .streak {
+    display: inline-block;
+    padding: 6px 14px;
+    margin-bottom: 16px;
+    background: linear-gradient(135deg, #ffb88c, #ff7e5f);
+    color: #fff;
+    border-radius: 999px;
+    font-size: 13px;
+    font-weight: 600;
+    letter-spacing: 0.4px;
+    box-shadow: 0 4px 12px rgba(255, 126, 95, 0.25);
+}
+.streak.hidden { display: none; }
 </style>
 </head>
 <body>
@@ -851,6 +864,7 @@
   <div class="today" id="today"></div>
   
   <h1>Читательский <span>дневник</span></h1>
+  <div class="streak hidden" id="streakBadge"></div>
   <div style="display:flex;gap:8px;justify-content:flex-end;margin-bottom:16px">
   <button onclick="exportData()" style="padding:8px 14px;border:1px solid #e5e1d8;background:#fff;border-radius:8px;cursor:pointer">⤓ Экспорт</button>
   <button onclick="document.getElementById('imp').click()" style="padding:8px 14px;border:1px solid #e5e1d8;background:#fff;border-radius:8px;cursor:pointer">⤒ Импорт</button>
@@ -1387,6 +1401,7 @@ function saveTrackerEntry() {
     document.getElementById('trackerPages').value = '';
     renderFormatSummary();
     renderTrackerLog();
+    renderStreak();
 }
 
 function deleteTrackerEntry() {
@@ -1491,12 +1506,60 @@ function renderTrackerLog() {
     el.innerHTML = html;
   }
   
+  /* ---- Streak (дни подряд) ---- */
+const STREAK_MIN = 1; // минимум страниц в день, чтобы день считался "читальным"
+
+function dayPages(key) {
+    const rec = dayData[key];
+    if (!rec) return 0;
+    if (typeof rec === 'number') return rec;
+    return (rec.paper || 0) + (rec.ebook || 0) + (rec.audio || 0);
+}
+
+function pluralDays(n) {
+    const m10 = n % 10, m100 = n % 100;
+    if (m10 === 1 && m100 !== 11) return 'день';
+    if (m10 >= 2 && m10 <= 4 && (m100 < 12 || m100 > 14)) return 'дня';
+    return 'дней';
+}
+
+function calculateStreak() {
+    const check = new Date();
+    let streak = 0;
+    for (let i = 0; i < 3650; i++) {
+        const key = `${check.getFullYear()}-${check.getMonth()}-${check.getDate()}`;
+        const pages = dayPages(key);
+        if (pages >= STREAK_MIN) {
+            streak++;
+        } else if (i > 0) {
+            break; // разрыв
+        }
+        // Если сегодня ещё ничего нет — не разрываем, день не закончился
+        check.setDate(check.getDate() - 1);
+    }
+    return streak;
+}
+
+function renderStreak() {
+    const el = document.getElementById('streakBadge');
+    if (!el) return;
+    const s = calculateStreak();
+    if (s < 2) {
+        el.classList.add('hidden');
+        el.textContent = '';
+    } else {
+        el.classList.remove('hidden');
+        el.textContent = `🔥 ${s} ${pluralDays(s)} подряд`;
+    }
+      }
+  
   /* ---- Главная отрисовка ---- */
   function render() {
     renderBooks();
     renderPlanForm();
     renderFormatSummary();
     renderTrackerLog();
+    renderStreak();
   }
 
   initTrackerForm();
