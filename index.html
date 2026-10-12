@@ -1341,99 +1341,139 @@ list.innerHTML = html;
     if (p <= 60) return 'c-purple';
     return 'c-green';
   }
-  
-  function renderTracker() {
+
+  /* ---- Форма трекера ---- */
+let selectedTrackerFormat = 'paper';
+
+function initTrackerForm() {
+    const daySel = document.getElementById('trackerDay');
+    if (!daySel || daySel.options.length) return;
+    for (let i = 1; i <= 31; i++) {
+        const o = document.createElement('option');
+        o.value = i; o.textContent = i;
+        daySel.appendChild(o);
+    }
+    const today = new Date();
+    document.getElementById('trackerMonth').value = today.getMonth() + 1;
+    daySel.value = today.getDate();
+    document.getElementById('trackerYear').textContent = today.getFullYear();
+}
+
+function setTrackerFormat(fmt, btn) {
+    selectedTrackerFormat = fmt;
+    document.querySelectorAll('.tf-fmt').forEach(b => b.classList.remove('active'));
+    if (btn) btn.classList.add('active');
+}
+
+function saveTrackerEntry() {
+    const m = parseInt(document.getElementById('trackerMonth').value);
+    const d = parseInt(document.getElementById('trackerDay').value);
+    const p = parseInt(document.getElementById('trackerPages').value);
+    if (!p || p <= 0) { alert('Введите количество страниц'); return; }
     const year = new Date().getFullYear();
-    document.getElementById('trackerYear').textContent = year;
-    
-    let html = '<div class="tracker-month"></div>';
-    MONTHS.forEach(m => html += `<div class="tracker-month">${m}</div>`);
-    
-    for (let d = 1; d <= 31; d++) {
-      html += `<div class="tracker-day">${d}</div>`;
-      for (let m = 0; m < 12; m++) {
-        const key = `${year}-${m}-${d}`;
-        const pages = dayData[key] || 0;
-        if (editingCell === key) {
-    const curFmt = dayFormats[key] || '';
-    html += `<div class="cell-edit">
-        <input type="number" class="tracker-input" 
-            value="${pages || ''}" min="0"
-            onblur="saveCell('${key}', this.value)"
-            onkeydown="cellKey(event)">
-        <div class="fmt-picker">
-            <button type="button" tabindex="-1" class="fmt-btn ${curFmt==='paper'?'active':''}" 
-                onmousedown="event.preventDefault(); setCellFormat('${key}','paper',this)" title="Бумага">📕</button>
-            <button type="button" tabindex="-1" class="fmt-btn ${curFmt==='ebook'?'active':''}" 
-                onmousedown="event.preventDefault(); setCellFormat('${key}','ebook',this)" title="Электронная">📱</button>
-            <button type="button" tabindex="-1" class="fmt-btn ${curFmt==='audio'?'active':''}" 
-                onmousedown="event.preventDefault(); setCellFormat('${key}','audio',this)" title="Аудио">🎧</button>
-        </div>
-    </div>`;
-          } else {
-          const cls = getColorClass(pages);
-          const filled = pages > 0 ? 'filled' : '';
-          const fmt = dayFormats[key] || '';
-const fmtIcon = fmt === 'paper' ? '📕' : fmt === 'ebook' ? '📱' : fmt === 'audio' ? '🎧' : '';
-html += `<button class="tracker-cell ${cls} ${filled}" 
-    onclick="editCell('${key}')"
-    title="${MONTHS_FULL[m]} ${d}">
-    <span class="cell-num">${pages || ''}</span>
-    ${fmtIcon ? `<span class="cell-fmt">${fmtIcon}</span>` : ''}
-</button>`;
-        }
-      }
-    }
-    document.getElementById('trackerGrid').innerHTML = html;
-    
-    if (editingCell) {
-      setTimeout(() => {
-        const inp = document.getElementById('cellInput');
-        if (inp) { inp.focus(); inp.select(); }
-      }, 0);
-    }
-  }
-  
-  function editCell(key) {
-    editingCell = key;
-    cancelCellEdit = false;
-    renderTracker();
-  }
-  
-  function cellKey(e) {
-    if (e.key === 'Enter') {
-      e.target.blur();
-    } else if (e.key === 'Escape') {
-      cancelCellEdit = true;
-      editingCell = null;
-      renderTracker();
-    }
-  }
-  
-  function saveCell(key, value) {
-    if (cancelCellEdit) { cancelCellEdit = false; return; }
-    const n = parseInt(value);
-    if (!n || n <= 0) {
-        delete dayData[key];
-        delete dayFormats[key];
-        saveFormats();
-    } else {
-        dayData[key] = n;
-    }
-    saveDays();
-    editingCell = null;
-    renderTracker();
+    const key = `${year}-${m - 1}-${d}`;
+    dayData[key] = p;
+    dayFormats[key] = selectedTrackerFormat;
+    saveDays(); saveFormats();
+    document.getElementById('trackerPages').value = '';
     renderFormatSummary();
+    renderTrackerLog();
+}
+
+function deleteTrackerEntry() {
+    const m = parseInt(document.getElementById('trackerMonth').value);
+    const d = parseInt(document.getElementById('trackerDay').value);
+    const year = new Date().getFullYear();
+    const key = `${year}-${m - 1}-${d}`;
+    if (!dayData[key] && !dayFormats[key]) {
+        alert('За эту дату ничего нет');
+        return;
     }
+    if (!confirm(`Удалить запись за ${d} число?`)) return;
+    delete dayData[key];
+    delete dayFormats[key];
+    saveDays(); saveFormats();
+    renderFormatSummary();
+    renderTrackerLog();
+}
+
+function renderFormatSummary() {
+    const totals = { paper: 0, ebook: 0, audio: 0, none: 0 };
+    for (const key in dayData) {
+        const p = dayData[key] || 0;
+        const f = dayFormats[key];
+        if (f === 'paper') totals.paper += p;
+        else if (f === 'ebook') totals.ebook += p;
+        else if (f === 'audio') totals.audio += p;
+        else totals.none += p;
+    }
+    const el = document.getElementById('formatSummary');
+    if (!el) return;
+    const total = totals.paper + totals.ebook + totals.audio + totals.none;
+    if (!total) { el.innerHTML = ''; return; }
+    el.innerHTML = `
+        <div class="fmt-sum-row"><span>📕 бумага:</span><strong>${totals.paper} стр.</strong></div>
+        <div class="fmt-sum-row"><span>📱 электронная:</span><strong>${totals.ebook} стр.</strong></div>
+        <div class="fmt-sum-row"><span>🎧 аудио:</span><strong>${totals.audio} стр.</strong></div>
+        ${totals.none ? `<div class="fmt-sum-row muted"><span>без формата:</span><strong>${totals.none} стр.</strong></div>` : ''}
+        <div class="fmt-sum-row total"><span>Всего:</span><strong>${total} стр.</strong></div>
+    `;
+}
+
+function renderTrackerLog() {
+    const el = document.getElementById('trackerLog');
+    if (!el) return;
+
+    const year = new Date().getFullYear();
+    const fmtIcon = f => f === 'paper' ? '📕' : f === 'ebook' ? '📱' : f === 'audio' ? '🎧' : '';
+
+    const entries = [];
+    for (const key in dayData) {
+        const parts = key.split('-');
+        if (parseInt(parts[0]) !== year) continue;
+        const m = parseInt(parts[1]);
+        const d = parseInt(parts[2]);
+        const pages = dayData[key] || 0;
+        if (!pages) continue;
+        entries.push({ m, d, pages, fmt: dayFormats[key] || '' });
+    }
+
+    if (!entries.length) {
+        el.innerHTML = '';
+        return;
+    }
+
+    entries.sort((a, b) => (b.m - a.m) || (b.d - a.d));
+
+    const byMonth = {};
+    entries.forEach(e => {
+        if (!byMonth[e.m]) byMonth[e.m] = [];
+        byMonth[e.m].push(e);
+    });
+
+    let html = '<h4 class="log-title">Прочитано по дням</h4>';
+    Object.keys(byMonth).sort((a, b) => b - a).forEach(m => {
+        html += `<div class="log-month">${MONTHS_FULL[m]}</div>`;
+        byMonth[m].forEach(e => {
+            html += `<div class="log-row">
+                <span>${e.d} ${MONTHS_FULL[m].toLowerCase().slice(0, 3)}</span>
+                <span>${fmtIcon(e.fmt)} ${e.pages} стр.</span>
+            </div>`;
+        });
+    });
+
+    el.innerHTML = html;
+  }
   
   /* ---- Главная отрисовка ---- */
   function render() {
     renderBooks();
-    renderTracker();
     renderPlanForm();
     renderFormatSummary();
+    renderTrackerLog();
   }
-  
+
+  initTrackerForm();
   renderToday();
   render();
   
