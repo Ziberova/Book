@@ -1854,6 +1854,70 @@ function renderStreak() {
     }
       }
 
+  /* ---- Напоминания ---- */
+const REMINDER_KEY = 'reading_diary_reminder';
+const REMINDER_HOUR = 22;
+
+function isReminderOn() {
+    return localStorage.getItem(REMINDER_KEY) === 'on';
+}
+
+function todayKey() {
+    const d = new Date();
+    return `${d.getFullYear()}-${d.getMonth()}-${d.getDate()}`;
+}
+
+function remindIfNeeded() {
+    if (!isReminderOn()) return;
+    if (typeof Notification === 'undefined') return;
+    if (Notification.permission !== 'granted') return;
+
+    const lastKey = localStorage.getItem(REMINDER_KEY + '_last');
+    const nowKey = todayKey();
+    if (lastKey === nowKey) return;
+
+    const now = new Date();
+    if (now.getHours() < REMINDER_HOUR) return;
+
+    new Notification('📚 Читательский дневник', {
+        body: 'Не забудь добавить, сколько прочитала сегодня!'
+    });
+    localStorage.setItem(REMINDER_KEY + '_last', nowKey);
+}
+
+function toggleReminder() {
+    if (isReminderOn()) {
+        localStorage.removeItem(REMINDER_KEY);
+        updateReminderBtn();
+        return;
+    }
+    if (!('Notification' in window)) {
+        alert('Твой браузер не поддерживает уведомления');
+        return;
+    }
+    Notification.requestPermission().then(perm => {
+        if (perm === 'granted') {
+            localStorage.setItem(REMINDER_KEY, 'on');
+            updateReminderBtn();
+            alert('Включено! Буду напоминать каждый день в 22:00.');
+        } else {
+            alert('Разрешение не получено. Уведомления не придут.');
+        }
+    });
+}
+
+function updateReminderBtn() {
+    const btn = document.getElementById('reminderBtn');
+    if (!btn) return;
+    if (isReminderOn()) {
+        btn.classList.add('on');
+        btn.textContent = '🔔 Напоминание включено (22:00)';
+    } else {
+        btn.classList.remove('on');
+        btn.textContent = '🔔 Включить напоминание в 22:00';
+    }
+  }
+  
   /* ---- Полки по жанрам ---- */
 const GENRES = ['Фэнтези', 'Роман', 'Классика', 'Другое'];
 
@@ -1947,6 +2011,9 @@ function runLoader() {
 renderToday();
 render();
 runLoader();
+  updateReminderBtn();
+remindIfNeeded();
+setInterval(remindIfNeeded, 60 * 1000);
   
   
   /* ---- Горячие клавиши ---- */
