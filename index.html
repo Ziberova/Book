@@ -890,50 +890,60 @@
     <!-- Форма добавления книги -->
   <div class="add-form">
     <h2>Добавить книгу</h2>
-    <div class="form-layout">
-      <div class="cover-field">
-        <div class="cover-upload" id="coverBox" onclick="document.getElementById('coverInput').click()">
-          <span class="icon" id="coverIcon">+</span>
-          <span class="hint" id="coverHint">Обложка</span>
-          <img class="cover-preview" id="coverPreview" style="display:none" alt="">
-          <button class="cover-remove" id="coverRemove" onclick="removeCover(event)" title="Убрать">×</button>
+<div class="form-layout">
+    <div class="cover-field">
+        <div class="cover-upload" id="coverBox">
+            <span class="icon" id="coverIcon">+</span>
+            <span class="hint" id="coverHint">Обложка</span>
+            <img class="cover-preview" id="coverPreview">
+            <button class="cover-remove" id="coverRemove">×</button>
         </div>
-        <input type="file" id="coverInput" accept="image/*" style="display:none" onchange="handleCover(event)">
-      </div>
-      
-      <div class="form-fields">
-        <div class="form-grid">
-          <div class="field">
-            <label>Название</label>
-            <input type="text" id="title" placeholder="Название книги">
-          </div>
-          <div class="field">
-            <label>Начало</label>
-            <input type="month" id="startDate">
-          </div>
-          <div class="field">
-            <label>Конец</label>
-            <input type="month" id="endDate">
-          </div>
-          <div class="field">
-            <label>Страниц</label>
-            <input type="number" id="pages" min="1" placeholder="0">
-          </div>
-          <div class="field">
-            <label>Оценка</label>
-            <select id="rating">
-              <option value="0">—</option>
-              <option value="5">★★★★★</option>
-              <option value="4">★★★★</option>
-              <option value="3">★★★</option>
-              <option value="2">★★</option>
-              <option value="1">★</option>
-            </select>
-          </div>
-          <button class="btn-add" onclick="addBook()">Добавить</button>
-        </div>
-      </div>
+        <input type="file" id="coverInput" accept="image/*">
     </div>
+
+    <div class="title-field">
+        <label>Название</label>
+        <input type="text" id="title" placeholder="Название книги">
+    </div>
+
+    <div class="form-fields">
+        <div class="form-grid">
+            <div class="field">
+                <label>Жанр</label>
+                <select id="genre">
+                    <option value="Фэнтези">Фэнтези</option>
+                    <option value="Роман">Роман</option>
+                    <option value="Классика">Классика</option>
+                    <option value="Другое">Другое</option>
+                </select>
+            </div>
+            <div class="field">
+                <label>Начало</label>
+                <input type="month" id="startDate">
+            </div>
+            <div class="field">
+                <label>Конец</label>
+                <input type="month" id="endDate">
+            </div>
+            <div class="field">
+                <label>Страниц</label>
+                <input type="number" id="pages" min="0">
+            </div>
+            <div class="field">
+                <label>Оценка</label>
+                <select id="rating">
+                    <option value="0">—</option>
+                    <option value="5">★★★★★</option>
+                    <option value="4">★★★★</option>
+                    <option value="3">★★★</option>
+                    <option value="2">★★</option>
+                    <option value="1">★</option>
+                </select>
+            </div>
+            <button class="btn-add" onclick="addBook()">Добавить</button>
+        </div>
+    </div>
+</div>
   </div>
   
   <!-- Список книг -->
