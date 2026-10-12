@@ -850,32 +850,48 @@
   <div class="books-list" id="booksList"></div>
   
   <!-- Трекер по дням -->
-  <div class="tracker">
+<div class="tracker">
     <h2>Чтение книг <span class="year" id="trackerYear"></span></h2>
-    <div class="tracker-sub">нажмите на клетку, введите количество страниц и нажмите Enter</div>
-    <div class="tracker-layout">
-      <div class="tracker-scroll">
-        <div class="tracker-grid" id="trackerGrid"></div>
-      </div>
-      <div class="legend">
-        <h4>страницы</h4>
-        <div class="legend-item"><span class="legend-swatch" style="background:#d97a7a"></span>0–10</div>
-        <div class="legend-item"><span class="legend-swatch" style="background:#e0a87a"></span>11–20</div>
-        <div class="legend-item"><span class="legend-swatch" style="background:#d4c470"></span>21–30</div>
-        <div class="legend-item"><span class="legend-swatch" style="background:#8ab8c9"></span>31–40</div>
-        <div class="legend-item"><span class="legend-swatch" style="background:#7a8fc9"></span>41–50</div>
-        <div class="legend-item"><span class="legend-swatch" style="background:#a88ab8"></span>51–60</div>
-        <div class="legend-item"><span class="legend-swatch" style="background:#8fa67e"></span>61+</div>
-      </div>
-      <div class="fmt-legend">
-    <span><b>Формат:</b></span>
-    <span>📕 бумага</span>
-    <span>📱 электронная</span>
-    <span>🎧 аудио</span>
-      </div>
-      <div id="formatSummary" class="fmt-summary"></div>
+    <div class="tracker-sub">Выбери месяц, дату, введи страницы и формат</div>
+
+    <div class="tracker-form">
+        <div class="tf-row">
+            <select id="trackerMonth" class="tf-select">
+                <option value="1">Янв</option>
+                <option value="2">Фев</option>
+                <option value="3">Мар</option>
+                <option value="4">Апр</option>
+                <option value="5">Май</option>
+                <option value="6">Июн</option>
+                <option value="7">Июл</option>
+                <option value="8">Авг</option>
+                <option value="9">Сен</option>
+                <option value="10">Окт</option>
+                <option value="11">Ноя</option>
+                <option value="12">Дек</option>
+            </select>
+            <select id="trackerDay" class="tf-select"></select>
+            <input type="number" id="trackerPages" class="tf-input tf-input-sm" placeholder="стр." min="1">
+        </div>
+        <div class="tf-row">
+            <div class="tf-format-group">
+                <button type="button" class="tf-fmt active" data-fmt="paper" onclick="setTrackerFormat('paper', this)">📕</button>
+                <button type="button" class="tf-fmt" data-fmt="ebook" onclick="setTrackerFormat('ebook', this)">📱</button>
+                <button type="button" class="tf-fmt" data-fmt="audio" onclick="setTrackerFormat('audio', this)">🎧</button>
+            </div>
+            <button type="button" class="tf-add" onclick="saveTrackerEntry()">+</button>
+            <button type="button" class="tf-del" onclick="deleteTrackerEntry()">×</button>
+        </div>
     </div>
-  </div>
+
+    <div class="fmt-legend">
+        <span><b>Формат:</b></span>
+        <span>📕 бумага</span>
+        <span>📱 электронная</span>
+        <span>🎧 аудио</span>
+    </div>
+    <div id="formatSummary" class="fmt-summary"></div>
+    <div id="trackerLog" class="tracker-log"></div>
 </div>
 <script>
   const MONTHS = ['Янв','Фев','Мар','Апр','Май','Июн','Июл','Авг','Сен','Окт','Ноя','Дек'];
