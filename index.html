@@ -769,6 +769,16 @@
     color: #fff;
     border-color: #222;
 }
+  .tracker-form { display: flex; flex-direction: column; gap: 12px; padding: 16px; background: #fbfaf7; border-radius: 12px; border: 1px solid #ece7db; }
+.tf-row { display: flex; gap: 8px; align-items: center; }
+.tf-select, .tf-input { flex: 1; padding: 12px 10px; border: 1px solid #e5e1d8; border-radius: 8px; font-size: 14px; font-family: inherit; background: #fdfcfa; color: #2c2c2c; text-align: center; cursor: pointer; outline: none; }
+.tf-input { cursor: text; text-align: left; }
+.tf-select:focus, .tf-input:focus { border-color: #b8a88a; }
+.tf-format-group { display: flex; gap: 4px; flex: 1; }
+.tf-fmt { flex: 1; padding: 10px; border: 1px solid #e5e1d8; border-radius: 8px; background: #fff; font-size: 18px; cursor: pointer; }
+.tf-fmt.active { background: #2c2c2c; border-color: #2c2c2c; }
+.tf-add { width: 52px; height: 46px; border: none; border-radius: 8px; background: #2c2c2c; color: #fff; font-size: 24px; cursor: pointer; font-weight: 300; }
+.tf-add:active { transform: scale(0.96); }
 </style>
 </head>
 <body>
@@ -882,31 +892,39 @@
   <!-- Трекер по дням -->
   <div class="tracker">
     <h2>Чтение книг <span class="year" id="trackerYear"></span></h2>
-    <div class="tracker-sub">нажмите на клетку, введите количество страниц и нажмите Enter</div>
-    <div class="tracker-layout">
-      <div class="tracker-scroll">
-        <div class="tracker-grid" id="trackerGrid"></div>
-      </div>
-      <div class="legend">
-        <h4>страницы</h4>
-        <div class="legend-item"><span class="legend-swatch" style="background:#d97a7a"></span>0–10</div>
-        <div class="legend-item"><span class="legend-swatch" style="background:#e0a87a"></span>11–20</div>
-        <div class="legend-item"><span class="legend-swatch" style="background:#d4c470"></span>21–30</div>
-        <div class="legend-item"><span class="legend-swatch" style="background:#8ab8c9"></span>31–40</div>
-        <div class="legend-item"><span class="legend-swatch" style="background:#7a8fc9"></span>41–50</div>
-        <div class="legend-item"><span class="legend-swatch" style="background:#a88ab8"></span>51–60</div>
-        <div class="legend-item"><span class="legend-swatch" style="background:#8fa67e"></span>61+</div>
-      </div>
-      <div class="fmt-legend">
-    <span><b>Формат:</b></span>
-    <span>📕 бумага</span>
-    <span>📱 электронная</span>
-    <span>🎧 аудио</span>
-      </div>
-      <div id="formatSummary" class="fmt-summary"></div>
+    <div class="tracker-sub">Выбери месяц, дату, введи страницы и формат</div>
+
+    <div class="tracker-form">
+        <div class="tf-row">
+            <select id="trackerMonth" class="tf-select">
+                <option value="1">Янв</option><option value="2">Фев</option>
+                <option value="3">Мар</option><option value="4">Апр</option>
+                <option value="5">Май</option><option value="6">Июн</option>
+                <option value="7">Июл</option><option value="8">Авг</option>
+                <option value="9">Сен</option><option value="10">Окт</option>
+                <option value="11">Ноя</option><option value="12">Дек</option>
+            </select>
+            <select id="trackerDay" class="tf-select"></select>
+            <input type="number" id="trackerPages" class="tf-input" placeholder="стр." min="1">
+        </div>
+        <div class="tf-row">
+            <div class="tf-format-group">
+                <button type="button" class="tf-fmt active" data-fmt="paper" onclick="setTrackerFormat('paper', this)">📕</button>
+                <button type="button" class="tf-fmt" data-fmt="ebook" onclick="setTrackerFormat('ebook', this)">📱</button>
+                <button type="button" class="tf-fmt" data-fmt="audio" onclick="setTrackerFormat('audio', this)">🎧</button>
+            </div>
+            <button type="button" class="tf-add" onclick="saveTrackerEntry()">+</button>
+        </div>
     </div>
+
+    <div class="fmt-legend">
+        <span><b>Формат:</b></span>
+        <span>📕 бумага</span>
+        <span>📱 электронная</span>
+        <span>🎧 аудио</span>
+    </div>
+    <div id="formatSummary" class="fmt-summary"></div>
   </div>
-</div>
 <script>
   const MONTHS = ['Янв','Фев','Мар','Апр','Май','Июн','Июл','Авг','Сен','Окт','Ноя','Дек'];
   const MONTHS_FULL = ['Январь','Февраль','Март','Апрель','Май','Июнь','Июль','Август','Сентябрь','Октябрь','Ноябрь','Декабрь'];
@@ -1280,103 +1298,55 @@ list.innerHTML = html;
     if (p <= 60) return 'c-purple';
     return 'c-green';
   }
-  
-  function renderTracker() {
+
+  /* ---- Форма трекера ---- */
+let selectedTrackerFormat = 'paper';
+
+function initTrackerForm() {
+    const daySel = document.getElementById('trackerDay');
+    if (!daySel || daySel.options.length) return;
+    for (let i = 1; i <= 31; i++) {
+        const o = document.createElement('option');
+        o.value = i; o.textContent = i;
+        daySel.appendChild(o);
+    }
+    const today = new Date();
+    document.getElementById('trackerMonth').value = today.getMonth() + 1;
+    daySel.value = today.getDate();
+    document.getElementById('trackerYear').textContent = today.getFullYear();
+}
+
+function setTrackerFormat(fmt, btn) {
+    selectedTrackerFormat = fmt;
+    document.querySelectorAll('.tf-fmt').forEach(b => b.classList.remove('active'));
+    if (btn) btn.classList.add('active');
+}
+
+function saveTrackerEntry() {
+    const m = parseInt(document.getElementById('trackerMonth').value);
+    const d = parseInt(document.getElementById('trackerDay').value);
+    const p = parseInt(document.getElementById('trackerPages').value);
+    if (!p || p <= 0) { alert('Введите количество страниц'); return; }
     const year = new Date().getFullYear();
-    document.getElementById('trackerYear').textContent = year;
-    
-    let html = '<div class="tracker-month"></div>';
-    MONTHS.forEach(m => html += `<div class="tracker-month">${m}</div>`);
-    
-    for (let d = 1; d <= 31; d++) {
-      html += `<div class="tracker-day">${d}</div>`;
-      for (let m = 0; m < 12; m++) {
-        const key = `${year}-${m}-${d}`;
-        const pages = dayData[key] || 0;
-        if (editingCell === key) {
-    const curFmt = dayFormats[key] || '';
-    html += `<div class="cell-edit">
-        <input type="number" class="tracker-input" 
-            value="${pages || ''}" min="0"
-            onblur="saveCell('${key}', this.value)"
-            onkeydown="cellKey(event)">
-        <div class="fmt-picker">
-            <button type="button" tabindex="-1" class="fmt-btn ${curFmt==='paper'?'active':''}" 
-                onmousedown="event.preventDefault(); setCellFormat('${key}','paper',this)" title="Бумага">📕</button>
-            <button type="button" tabindex="-1" class="fmt-btn ${curFmt==='ebook'?'active':''}" 
-                onmousedown="event.preventDefault(); setCellFormat('${key}','ebook',this)" title="Электронная">📱</button>
-            <button type="button" tabindex="-1" class="fmt-btn ${curFmt==='audio'?'active':''}" 
-                onmousedown="event.preventDefault(); setCellFormat('${key}','audio',this)" title="Аудио">🎧</button>
-        </div>
-    </div>`;
-        } else {
-          const cls = getColorClass(pages);
-          const filled = pages > 0 ? 'filled' : '';
-          const fmt = dayFormats[key] || '';
-const fmtIcon = fmt === 'paper' ? '📕' : fmt === 'ebook' ? '📱' : fmt === 'audio' ? '🎧' : '';
-html += `<button class="tracker-cell ${cls} ${filled}" 
-    onclick="editCell('${key}')"
-    title="${MONTHS_FULL[m]} ${d}">
-    <span class="cell-num">${pages || ''}</span>
-    ${fmtIcon ? `<span class="cell-fmt">${fmtIcon}</span>` : ''}
-</button>`;
-        }
-      }
-    }
-    document.getElementById('trackerGrid').innerHTML = html;
-    
-    if (editingCell) {
-      setTimeout(() => {
-        const inp = document.getElementById('cellInput');
-        if (inp) { inp.focus(); inp.select(); }
-      }, 0);
-    }
-  }
-  
-  function editCell(key) {
-    editingCell = key;
-    cancelCellEdit = false;
-    renderTracker();
-  }
-  
-  function cellKey(e) {
-    if (e.key === 'Enter') {
-      e.target.blur();
-    } else if (e.key === 'Escape') {
-      cancelCellEdit = true;
-      editingCell = null;
-      renderTracker();
-    }
-  }
-  
-  function saveCell(key, value) {
-    if (cancelCellEdit) { cancelCellEdit = false; return; }
-    const n = parseInt(value);
-    if (!n || n <= 0) {
-        delete dayData[key];
-        delete dayFormats[key];
-        saveFormats();
-    } else {
-        dayData[key] = n;
-    }
-    saveDays();
-    editingCell = null;
-    renderTracker();
+    const key = `${year}-${m - 1}-${d}`;
+    dayData[key] = p;
+    dayFormats[key] = selectedTrackerFormat;
+    saveDays(); saveFormats();
+    document.getElementById('trackerPages').value = '';
     renderFormatSummary();
-    }
-  
+}
   /* ---- Главная отрисовка ---- */
   function render() {
     renderStats();
     renderBooks();
-    renderTracker();
     renderStatPanel();
     renderPlanForm();
     renderFormatSummary();
   }
   
-  renderToday();
-  render();
+  initTrackerForm();
+renderToday();
+render();
   
   /* ---- Горячие клавиши ---- */
   document.querySelectorAll('#title, #pages').forEach(el => {
