@@ -779,6 +779,24 @@
 .tf-fmt.active { background: #2c2c2c; border-color: #2c2c2c; }
 .tf-add { width: 52px; height: 46px; border: none; border-radius: 8px; background: #2c2c2c; color: #fff; font-size: 24px; cursor: pointer; font-weight: 300; }
 .tf-add:active { transform: scale(0.96); }
+.tf-del {
+    width: 52px;
+    height: 46px;
+    border: 1px solid #e5e1d8;
+    border-radius: 8px;
+    background: #fff;
+    color: #d97a7a;
+    font-size: 22px;
+    cursor: pointer;
+    font-family: inherit;
+}
+.tf-del:active { transform: scale(0.96); background: #fdeef4; }
+.tf-input-sm {
+    flex: 0 0 70px !important;
+    min-width: 70px;
+    text-align: center;
+    padding: 12px 6px;
+}
 </style>
 </head>
 <body>
@@ -905,7 +923,7 @@
                 <option value="11">Ноя</option><option value="12">Дек</option>
             </select>
             <select id="trackerDay" class="tf-select"></select>
-            <input type="number" id="trackerPages" class="tf-input" placeholder="стр." min="1">
+            <input type="number" id="trackerPages" class="tf-input tf-input-sm" placeholder="стр." min="1">
         </div>
         <div class="tf-row">
             <div class="tf-format-group">
@@ -914,6 +932,7 @@
                 <button type="button" class="tf-fmt" data-fmt="audio" onclick="setTrackerFormat('audio', this)">🎧</button>
             </div>
             <button type="button" class="tf-add" onclick="saveTrackerEntry()">+</button>
+            <button type="button" class="tf-del" onclick="deleteTrackerEntry()" title="Удалить">×</button>
         </div>
     </div>
 
@@ -1335,6 +1354,21 @@ function saveTrackerEntry() {
     document.getElementById('trackerPages').value = '';
     renderFormatSummary();
 }
+  function deleteTrackerEntry() {
+    const m = parseInt(document.getElementById('trackerMonth').value);
+    const d = parseInt(document.getElementById('trackerDay').value);
+    const year = new Date().getFullYear();
+    const key = `${year}-${m - 1}-${d}`;
+    if (!dayData[key] && !dayFormats[key]) {
+        alert('За эту дату ничего нет');
+        return;
+    }
+    if (!confirm(`Удалить запись за ${d} число?`)) return;
+    delete dayData[key];
+    delete dayFormats[key];
+    saveDays(); saveFormats();
+    renderFormatSummary();
+  }
   /* ---- Главная отрисовка ---- */
   function render() {
     renderStats();
