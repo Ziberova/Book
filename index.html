@@ -1897,14 +1897,36 @@ function toggleReminder() {
     }
     Notification.requestPermission().then(perm => {
         if (perm === 'granted') {
-            localStorage.setItem(REMINDER_KEY, 'on');
-            updateReminderBtn();
-            alert('Включено! Буду напоминать каждый день в 22:00.');
-        } else {
+    localStorage.setItem(REMINDER_KEY, 'on');
+    updateReminderBtn();
+    alert('Включено! Буду напоминать каждый день в 22:00.');
+    registerPeriodicSync();
+  } else {
             alert('Разрешение не получено. Уведомления не придут.');
         }
     });
 }
+  async function registerPeriodicSync() {
+    if (!('serviceWorker' in navigator)) return;
+    if (!('periodicSync' in window.ServiceWorkerRegistration.prototype)) {
+        console.log('periodicSync не поддерживается');
+        return;
+    }
+    try {
+        const reg = await navigator.serviceWorker.ready;
+        const status = await navigator.permissions.query({ name: 'periodic-background-sync' });
+        if (status.state !== 'granted') {
+            console.log('Разрешение periodicSync не дано');
+            return;
+        }
+        await reg.periodicSync.register('daily-reminder', {
+            minInterval: 12 * 60 * 60 * 1000
+        });
+        console.log('periodicSync зарегистрирован');
+    } catch (e) {
+        console.log('Ошибка periodicSync:', e);
+    }
+  }
 
 function updateReminderBtn() {
     const btn = document.getElementById('reminderBtn');
