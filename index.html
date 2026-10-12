@@ -1119,6 +1119,9 @@
     <button class="tab-btn active" id="tabDiary" onclick="showSlide('slide2'); setActiveTab('tabDiary')">📚 Дневник</button>
     <button class="tab-btn" id="tabShelf" onclick="showSlide('slide3'); setActiveTab('tabShelf')">🗂 Библиотека</button>
   </div>
+    <div class="reminder-row">
+    <button class="reminder-btn" id="reminderBtn" onclick="toggleReminder()">🔔 Включить напоминание в 22:00</button>
+    </div>
     <div style="display:flex;gap:8px;justify-content:flex-end;margin-bottom:16px">
   <button onclick="exportData()" style="padding:8px 14px;border:1px solid #e5e1d8;background:#fff;border-radius:8px;cursor:pointer">⤓ Экспорт</button>
   <button onclick="document.getElementById('imp').click()" style="padding:8px 14px;border:1px solid #e5e1d8;background:#fff;border-radius:8px;cursor:pointer">⤒ Импорт</button>
