@@ -1007,7 +1007,7 @@
     localStorage.setItem(FORMATS_KEY, JSON.stringify(dayFormats));
 }
 
-  function renderFormatSummary() {
+    function renderFormatSummary() {
     const totals = { paper: 0, ebook: 0, audio: 0, none: 0 };
     for (const key in dayData) {
         const p = dayData[key] || 0;
@@ -1017,8 +1017,20 @@
         else if (f === 'audio') totals.audio += p;
         else totals.none += p;
     }
-
-    function renderTrackerLog() {
+    const el = document.getElementById('formatSummary');
+    if (!el) return;
+    const total = totals.paper + totals.ebook + totals.audio + totals.none;
+    if (!total) { el.innerHTML = ''; return; }
+    el.innerHTML = `
+        <div class="fmt-sum-row"><span>📕 бумага:</span><strong>${totals.paper} стр.</strong></div>
+        <div class="fmt-sum-row"><span>📱 электронная:</span><strong>${totals.ebook} стр.</strong></div>
+        <div class="fmt-sum-row"><span>🎧 аудио:</span><strong>${totals.audio} стр.</strong></div>
+        ${totals.none ? `<div class="fmt-sum-row muted"><span>без формата:</span><strong>${totals.none} стр.</strong></div>` : ''}
+        <div class="fmt-sum-row total"><span>Всего:</span><strong>${total} стр.</strong></div>
+    `;
+    }
+  
+  function renderTrackerLog() {
     const el = document.getElementById('trackerLog');
     if (!el) return;
 
@@ -1061,118 +1073,6 @@
     });
 
     el.innerHTML = html;
-          }
-    const el = document.getElementById('formatSummary');
-    if (!el) return;
-    const total = totals.paper + totals.ebook + totals.audio + totals.none;
-    if (!total) { el.innerHTML = ''; return; }
-    el.innerHTML = `
-        <div class="fmt-sum-row"><span>📕 бумага:</span><strong>${totals.paper} стр.</strong></div>
-        <div class="fmt-sum-row"><span>📱 электронная:</span><strong>${totals.ebook} стр.</strong></div>
-        <div class="fmt-sum-row"><span>🎧 аудио:</span><strong>${totals.audio} стр.</strong></div>
-        ${totals.none ? `<div class="fmt-sum-row muted"><span>без формата:</span><strong>${totals.none} стр.</strong></div>` : ''}
-        <div class="fmt-sum-row total"><span>Всего:</span><strong>${total} стр.</strong></div>
-    `;
-  }
-
-    function renderTrackerLog() {
-    const el = document.getElementById('trackerLog');
-    if (!el) return;
-
-    const year = new Date().getFullYear();
-    const fmtIcon = f => f === 'paper' ? '📕' : f === 'ebook' ? '📱' : f === 'audio' ? '🎧' : '';
-
-    const entries = [];
-    for (const key in dayData) {
-        const parts = key.split('-');
-        if (parseInt(parts[0]) !== year) continue;
-        const m = parseInt(parts[1]);
-        const d = parseInt(parts[2]);
-        const pages = dayData[key] || 0;
-        if (!pages) continue;
-        entries.push({ m, d, pages, fmt: dayFormats[key] || '' });
-    }
-
-    if (!entries.length) {
-        el.innerHTML = '';
-        return;
-    }
-
-    entries.sort((a, b) => (b.m - a.m) || (b.d - a.d));
-
-    const byMonth = {};
-    entries.forEach(e => {
-        if (!byMonth[e.m]) byMonth[e.m] = [];
-        byMonth[e.m].push(e);
-    });
-
-function renderFormatSummary() {
-    const totals = { paper: 0, ebook: 0, audio: 0, none: 0 };
-    for (const key in dayData) {
-        const p = dayData[key] || 0;
-        const f = dayFormats[key];
-        if (f === 'paper') totals.paper += p;
-        else if (f === 'ebook') totals.ebook += p;
-        else if (f === 'audio') totals.audio += p;
-        else totals.none += p;
-    }
-    const el = document.getElementById('formatSummary');
-    if (!el) return;
-    const total = totals.paper + totals.ebook + totals.audio + totals.none;
-    if (!total) { el.innerHTML = ''; return; }
-    el.innerHTML = `
-        <div class="fmt-sum-row"><span>📕 бумага:</span><strong>${totals.paper} стр.</strong></div>
-        <div class="fmt-sum-row"><span>📱 электронная:</span><strong>${totals.ebook} стр.</strong></div>
-        <div class="fmt-sum-row"><span>🎧 аудио:</span><strong>${totals.audio} стр.</strong></div>
-        ${totals.none ? `<div class="fmt-sum-row muted"><span>без формата:</span><strong>${totals.none} стр.</strong></div>` : ''}
-        <div class="fmt-sum-row total"><span>Всего:</span><strong>${total} стр.</strong></div>
-    `;
-}
-
-function renderTrackerLog() {
-    const el = document.getElementById('trackerLog');
-    if (!el) return;
-
-    const year = new Date().getFullYear();
-    const fmtIcon = f => f === 'paper' ? '📕' : f === 'ebook' ? '📱' : f === 'audio' ? '🎧' : '';
-
-    const entries = [];
-    for (const key in dayData) {
-        const parts = key.split('-');
-        if (parseInt(parts[0]) !== year) continue;
-        const m = parseInt(parts[1]);
-        const d = parseInt(parts[2]);
-        const pages = dayData[key] || 0;
-        if (!pages) continue;
-        entries.push({ m, d, pages, fmt: dayFormats[key] || '' });
-    }
-
-    if (!entries.length) {
-        el.innerHTML = '';
-        return;
-    }
-
-    entries.sort((a, b) => (b.m - a.m) || (b.d - a.d));
-
-    const byMonth = {};
-    entries.forEach(e => {
-        if (!byMonth[e.m]) byMonth[e.m] = [];
-        byMonth[e.m].push(e);
-    });
-
-    let html = '<h4 class="log-title">Прочитано по дням</h4>';
-    Object.keys(byMonth).sort((a, b) => b - a).forEach(m => {
-        html += `<div class="log-month">${MONTHS_FULL[m]}</div>`;
-        byMonth[m].forEach(e => {
-            html += `<div class="log-row">
-                <span>${e.d} ${MONTHS_FULL[m].toLowerCase().slice(0, 3)}</span>
-                <span>${fmtIcon(e.fmt)} ${e.pages} стр.</span>
-            </div>`;
-        });
-    });
-
-    el.innerHTML = html;
-    }
       
 function setCellFormat(key, format, btn) {
     if (dayFormats[key] === format) {
