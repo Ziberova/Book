@@ -927,6 +927,77 @@
     font-size: 11px;
     margin-bottom: 6px;
   }
+  /* Слайды */
+.slide { display: none; }
+.slide.active { display: block; animation: fadeSlide 0.35s ease; }
+
+@keyframes fadeSlide {
+    from { opacity: 0; transform: translateY(8px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+
+/* Экран загрузки */
+.loader-wrap {
+    max-width: 420px;
+    margin: 60px auto 0;
+    padding: 40px 32px;
+    background: rgba(255, 255, 255, 0.7);
+    border-radius: 22px;
+    box-shadow: 0 20px 50px rgba(60, 50, 40, 0.08);
+    text-align: center;
+}
+.loader-title {
+    font-size: 26px;
+    font-weight: 600;
+    letter-spacing: 1px;
+    margin-bottom: 8px;
+    color: #2c2c2c;
+}
+.loader-sub {
+    font-size: 13px;
+    color: #aaa;
+    margin-bottom: 24px;
+}
+.bar-track {
+    height: 10px;
+    background: #ece7db;
+    border-radius: 999px;
+    overflow: hidden;
+}
+.bar-fill {
+    height: 100%;
+    width: 0%;
+    background: linear-gradient(90deg, #d9a7a7, #b8a88a);
+    border-radius: 999px;
+    transition: width 0.25s ease;
+}
+.bar-pct {
+    font-size: 12px;
+    color: #999;
+    margin-top: 10px;
+}
+.start-btn {
+    margin-top: 20px;
+    padding: 12px 32px;
+    border: none;
+    border-radius: 10px;
+    background: #2c2c2c;
+    color: #fff;
+    font-size: 14px;
+    letter-spacing: 1px;
+    cursor: pointer;
+    font-family: inherit;
+    transition: all 0.2s;
+}
+.start-btn:hover { background: #b8a88a; transform: translateY(-1px); }
+.start-btn.hidden { display: none; }
+
+.shelves-hint {
+    color: #aaa;
+    font-style: italic;
+    text-align: center;
+    margin-top: 40px;
+  }
 </style>
 </head>
 <body>
@@ -1651,6 +1722,34 @@ function renderStreak() {
         el.textContent = `🔥 ${s} ${pluralDays(s)} подряд`;
     }
       }
+
+  /* ---- Слайды ---- */
+function showSlide(id) {
+    document.querySelectorAll('.slide').forEach(s => s.classList.remove('active'));
+    const el = document.getElementById(id);
+    if (el) el.classList.add('active');
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+/* ---- Загрузка ---- */
+function runLoader() {
+    const fill = document.getElementById('barFill');
+    const pct = document.getElementById('barPct');
+    const btn = document.getElementById('startBtn');
+    if (!fill || !pct || !btn) return;
+
+    let progress = 0;
+    const timer = setInterval(() => {
+        progress += Math.random() * 10 + 4;
+        if (progress >= 100) {
+            progress = 100;
+            clearInterval(timer);
+            setTimeout(() => btn.classList.remove('hidden'), 300);
+        }
+        fill.style.width = progress + '%';
+        pct.textContent = Math.round(progress) + '%';
+    }, 200);
+  }
   
   /* ---- Главная отрисовка ---- */
   function render() {
@@ -1662,8 +1761,10 @@ function renderStreak() {
   }
 
   initTrackerForm();
-  renderToday();
-  render();
+renderToday();
+render();
+runLoader();
+  
   
   /* ---- Горячие клавиши ---- */
   document.querySelectorAll('#title, #pages').forEach(el => {
