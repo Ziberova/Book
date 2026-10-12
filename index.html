@@ -1392,8 +1392,6 @@ const list = activeStat === 'planned'
         </div>
         <div class="book-info">
           <div class="book-title">${escapeHtml(b.title)}</div>
-         <div class="book-info">
-         <div class="book-title">${escapeHtml(b.title)}</div>
          ${b.genre ? `<div class="book-genre">${escapeHtml(b.genre)}</div>` : ''}
          <div class="book-meta">
             ${(b.endDate || parseInt(b.rating) > 0)
