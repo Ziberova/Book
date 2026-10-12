@@ -1017,6 +1017,8 @@
         else if (f === 'audio') totals.audio += p;
         else totals.none += p;
     }
+  }
+    
     function renderTrackerLog() {
     const el = document.getElementById('trackerLog');
     if (!el) return;
@@ -1431,7 +1433,6 @@ function saveTrackerEntry() {
     saveDays(); saveFormats();
     document.getElementById('trackerPages').value = '';
     renderFormatSummary();
-  renderFormatSummary();
 renderTrackerLog();
 }
   function deleteTrackerEntry() {
@@ -1457,7 +1458,7 @@ renderTrackerLog();
     renderStatPanel();
     renderPlanForm();
     renderFormatSummary();
-    renderTrackerLog()
+    renderTrackerLog();
   }
   
   initTrackerForm();
