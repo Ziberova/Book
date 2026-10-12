@@ -1372,9 +1372,18 @@ function saveTrackerEntry() {
     if (!p || p <= 0) { alert('Введите количество страниц'); return; }
     const year = new Date().getFullYear();
     const key = `${year}-${m - 1}-${d}`;
-    dayData[key] = p;
-    dayFormats[key] = selectedTrackerFormat;
-    saveDays(); saveFormats();
+
+    // Старые данные могли быть числом — превращаем в объект
+    if (typeof dayData[key] === 'number') {
+        dayData[key] = { paper: 0, ebook: 0, audio: 0 };
+    }
+    if (!dayData[key] || typeof dayData[key] !== 'object') {
+        dayData[key] = { paper: 0, ebook: 0, audio: 0 };
+    }
+
+    dayData[key][selectedTrackerFormat] += p;
+
+    saveDays();
     document.getElementById('trackerPages').value = '';
     renderFormatSummary();
     renderTrackerLog();
@@ -1385,37 +1394,39 @@ function deleteTrackerEntry() {
     const d = parseInt(document.getElementById('trackerDay').value);
     const year = new Date().getFullYear();
     const key = `${year}-${m - 1}-${d}`;
-    if (!dayData[key] && !dayFormats[key]) {
+    if (!dayData[key]) {
         alert('За эту дату ничего нет');
         return;
     }
-    if (!confirm(`Удалить запись за ${d} число?`)) return;
+    if (!confirm(`Удалить ВСЕ записи за ${d} число?`)) return;
     delete dayData[key];
-    delete dayFormats[key];
-    saveDays(); saveFormats();
+    saveDays();
     renderFormatSummary();
     renderTrackerLog();
 }
 
 function renderFormatSummary() {
-    const totals = { paper: 0, ebook: 0, audio: 0, none: 0 };
+    const totals = { paper: 0, ebook: 0, audio: 0 };
     for (const key in dayData) {
-        const p = dayData[key] || 0;
-        const f = dayFormats[key];
-        if (f === 'paper') totals.paper += p;
-        else if (f === 'ebook') totals.ebook += p;
-        else if (f === 'audio') totals.audio += p;
-        else totals.none += p;
+        const rec = dayData[key];
+        if (typeof rec === 'number') {
+            // старые записи без формата
+            totals.paper += rec;
+            continue;
+        }
+        if (!rec) continue;
+        totals.paper += rec.paper || 0;
+        totals.ebook += rec.ebook || 0;
+        totals.audio += rec.audio || 0;
     }
     const el = document.getElementById('formatSummary');
     if (!el) return;
-    const total = totals.paper + totals.ebook + totals.audio + totals.none;
+    const total = totals.paper + totals.ebook + totals.audio;
     if (!total) { el.innerHTML = ''; return; }
     el.innerHTML = `
         <div class="fmt-sum-row"><span>📕 бумага:</span><strong>${totals.paper} стр.</strong></div>
         <div class="fmt-sum-row"><span>📱 электронная:</span><strong>${totals.ebook} стр.</strong></div>
         <div class="fmt-sum-row"><span>🎧 аудио:</span><strong>${totals.audio} стр.</strong></div>
-        ${totals.none ? `<div class="fmt-sum-row muted"><span>без формата:</span><strong>${totals.none} стр.</strong></div>` : ''}
         <div class="fmt-sum-row total"><span>Всего:</span><strong>${total} стр.</strong></div>
     `;
 }
@@ -1425,7 +1436,7 @@ function renderTrackerLog() {
     if (!el) return;
 
     const year = new Date().getFullYear();
-    const fmtIcon = f => f === 'paper' ? '📕' : f === 'ebook' ? '📱' : f === 'audio' ? '🎧' : '';
+    const fmtIcon = { paper: '📕', ebook: '📱', audio: '🎧' };
 
     const entries = [];
     for (const key in dayData) {
@@ -1433,9 +1444,20 @@ function renderTrackerLog() {
         if (parseInt(parts[0]) !== year) continue;
         const m = parseInt(parts[1]);
         const d = parseInt(parts[2]);
-        const pages = dayData[key] || 0;
-        if (!pages) continue;
-        entries.push({ m, d, pages, fmt: dayFormats[key] || '' });
+        const rec = dayData[key];
+
+        let paper = 0, ebook = 0, audio = 0;
+        if (typeof rec === 'number') {
+            paper = rec;
+        } else if (rec && typeof rec === 'object') {
+            paper = rec.paper || 0;
+            ebook = rec.ebook || 0;
+            audio = rec.audio || 0;
+        }
+        const dayTotal = paper + ebook + audio;
+        if (!dayTotal) continue;
+
+        entries.push({ m, d, paper, ebook, audio, dayTotal });
     }
 
     if (!entries.length) {
@@ -1455,9 +1477,13 @@ function renderTrackerLog() {
     Object.keys(byMonth).sort((a, b) => b - a).forEach(m => {
         html += `<div class="log-month">${MONTHS_FULL[m]}</div>`;
         byMonth[m].forEach(e => {
+            let parts = [];
+            if (e.paper) parts.push(`${fmtIcon.paper} ${e.paper}`);
+            if (e.ebook) parts.push(`${fmtIcon.ebook} ${e.ebook}`);
+            if (e.audio) parts.push(`${fmtIcon.audio} ${e.audio}`);
             html += `<div class="log-row">
                 <span>${e.d} ${MONTHS_FULL[m].toLowerCase().slice(0, 3)}</span>
-                <span>${fmtIcon(e.fmt)} ${e.pages} стр.</span>
+                <span>${parts.join(' · ')} = ${e.dayTotal} стр.</span>
             </div>`;
         });
     });
