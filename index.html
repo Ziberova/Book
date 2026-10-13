@@ -1418,7 +1418,11 @@ function setCellFormat(key, format, btn) {
     document.getElementById('coverHint').style.display = 'none';
     box.classList.add('has-image');
   }
-function removeCover(e) { e.stopPropagation(); resetCoverField(); }
+
+  function removeCover(e) {
+    e.stopPropagation();
+    resetCoverField();
+  }
   
   function resetCoverField() {
     currentCover = null;
