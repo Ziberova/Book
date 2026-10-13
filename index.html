@@ -351,7 +351,9 @@
     z-index: 2;
   }
   
-  .cover-upload.has-image .cover-remove { display: flex; }
+  .cover-upload.has-image .cover-remove {
+    display: flex;
+  }
   .cover-upload.has-image { border-style: solid; border-color: #e0dbd0; }
   
   .form-fields { flex: 1; min-width: 0; }
@@ -1945,6 +1947,7 @@ renderToday();
 render();
 runLoader();
   document.getElementById('coverInput').addEventListener('change', handleCover);
+  document.getElementById('coverRemove').addEventListener('click', removeCover);
   
   
   /* ---- Горячие клавиши ---- */
