@@ -1909,33 +1909,6 @@ function toggleReminder() {
         console.log('periodicSync не поддерживается');
         return;
     }
-    try {
-        const reg = await navigator.serviceWorker.ready;
-        const status = await navigator.permissions.query({ name: 'periodic-background-sync' });
-        if (status.state !== 'granted') {
-            console.log('Разрешение periodicSync не дано');
-            return;
-        }
-        await reg.periodicSync.register('daily-reminder', {
-            minInterval: 12 * 60 * 60 * 1000
-        });
-        console.log('periodicSync зарегистрирован');
-    } catch (e) {
-        console.log('Ошибка periodicSync:', e);
-    }
-  }
-
-function updateReminderBtn() {
-    const btn = document.getElementById('reminderBtn');
-    if (!btn) return;
-    if (isReminderOn()) {
-        btn.classList.add('on');
-        btn.textContent = '🔔 Напоминание включено (22:00)';
-    } else {
-        btn.classList.remove('on');
-        btn.textContent = '🔔 Включить напоминание в 22:00';
-    }
-  }
   
   /* ---- Полки по жанрам ---- */
 const GENRES = ['Фэнтези', 'Роман', 'Классика', 'Другое'];
