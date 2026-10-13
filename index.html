@@ -1169,7 +1169,7 @@
     <h2>Добавить книгу</h2>
 <div class="form-layout">
     <div class="cover-field">
-        <div class="cover-upload" id="coverBox" onclick="document.getElementById('coverInput').click()">
+        <div class="cover-upload" id="coverBox">
             <span class="icon" id="coverIcon">+</span>
             <span class="hint" id="coverHint">Обложка</span>
             <img class="cover-preview" id="coverPreview">
@@ -1951,8 +1951,22 @@ renderToday();
 render();
 runLoader();
   document.getElementById('coverInput').addEventListener('change', handleCover);
-  document.getElementById('coverRemove').addEventListener('click', removeCover);
-  
+  const removeBtn = document.getElementById('coverRemove');
+removeBtn.addEventListener('click', removeCover);
+removeBtn.addEventListener('touchend', function(e) {
+    e.preventDefault();
+    e.stopPropagation();
+    removeCover(e);
+});
+  document.getElementById('coverBox').addEventListener('click', function(e) {
+    if (e.target.closest('.cover-remove')) return;
+    document.getElementById('coverInput').click();
+});
+document.getElementById('coverRemove').addEventListener('touchend', function(e) {
+    e.preventDefault();
+    e.stopPropagation();
+    removeCover(e);
+});
   
   /* ---- Горячие клавиши ---- */
   document.querySelectorAll('#title, #pages').forEach(el => {
