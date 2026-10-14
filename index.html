@@ -1120,6 +1120,19 @@
     color: #fff;
     border-color: #2c2c2c;
 }
+  .btn-read {
+    background: none;
+    border: none;
+    color: #7fa87a;
+    font-size: 18px;
+    font-weight: 600;
+    cursor: pointer;
+    padding: 6px 10px;
+    border-radius: 6px;
+    transition: all 0.2s;
+    font-family: inherit;
+}
+.btn-read:hover { background: #e8f2e6; }
 </style>
 </head>
 <body>
@@ -1622,6 +1635,7 @@ const list = activeStat === 'planned'
             ${b.rating > 0 ? `<span class="rating">${stars(b.rating)}</span>` : ''}
           </div>
         </div>
+        ${!(b.endDate || parseInt(b.rating) > 0) ? `<button class="btn-read" onclick="markAsRead(${b.id})" title="Отметить прочитанной">✓</button>` : ''}
         <button class="btn-delete" onclick="deleteBook(${b.id})" title="Удалить">×</button>
       </div>
     `;
